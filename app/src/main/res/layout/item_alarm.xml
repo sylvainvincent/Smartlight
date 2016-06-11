@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="100dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="260dp"
+        android:layout_height="match_parent">
+        <TextView
+            android:id="@+id/text_time"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:textSize="40sp"
+            android:gravity="start|center"
+            android:textStyle="bold"
+            android:text="10:50"/>
+        <LinearLayout
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_gravity="center"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:id="@+id/text_alarm_monday"
+                android:layout_width="35dp"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:text="Lun"/>
+            <TextView
+                android:id="@+id/text_alarm_tuesday"
+                android:layout_width="35dp"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:text="Mar"/>
+            <TextView
+                android:id="@+id/text_alarm_wednesday"
+                android:layout_width="35dp"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:text="Mer"/>
+            <TextView
+                android:id="@+id/text_alarm_thursday"
+                android:layout_width="35dp"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:text="Jeu"/>
+            <TextView
+                android:id="@+id/text_alarm_friday"
+                android:layout_width="35dp"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:text="Ven"/>
+            <TextView
+                android:id="@+id/text_alarm_sunday"
+                android:layout_width="35dp"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:text="Sam"/>
+            <TextView
+                android:id="@+id/text_alarm_saturday"
+                android:layout_width="35dp"
+                android:gravity="center"
+                android:layout_height="match_parent"
+                android:text="Dim"/>
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+    <Switch
+        android:id="@+id/switch_alarm"
+        android:padding="30dp"
+        android:layout_gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>
