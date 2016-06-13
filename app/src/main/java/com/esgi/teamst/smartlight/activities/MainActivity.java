@@ -11,8 +11,13 @@ import android.widget.Switch;
 import com.esgi.teamst.smartlight.R;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 import com.getbase.floatingactionbutton.FloatingActionsMenu;
+import com.microsoft.windowsazure.mobileservices.MobileServiceClient;
+
+import java.net.MalformedURLException;
 
 public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener,View.OnClickListener {
+
+    public final String WEB_SERVICE_URL = "http://smart-light.azurewebsites.net";
 
     protected FloatingActionButton modifyEventButton;
     protected FloatingActionButton joinEventButton;
@@ -26,10 +31,19 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_main);
-         this.initView();
+        this.initView();
         switchAutomaticLighting.setOnCheckedChangeListener(this);
         switchContinueLighting.setOnCheckedChangeListener(this);
         fabLightingProgram.setOnClickListener(this);
+
+        try {
+            MobileServiceClient mClient = new MobileServiceClient(
+                    WEB_SERVICE_URL, // Replace with the above Site URL
+                    this);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override

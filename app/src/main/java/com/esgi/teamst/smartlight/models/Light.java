@@ -11,6 +11,8 @@ public class Light {
     private boolean mIsOn;
     private boolean mPresenceDetectorIsOn;
 
+    public Light(){}
+
     public Light(int mId, String mName, int mIntensity, boolean mIsOn, boolean mPresenceDetectorIsOn) {
         this.mId = mId;
         this.mName = mName;
