@@ -3,6 +3,7 @@ package com.esgi.teamst.smartlight.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ProgressBar;
@@ -97,7 +98,12 @@ public class SplashScreenActivity extends AppCompatActivity {
 
                             @Override
                             public void onFailure(Call<Light> call, Throwable t) {
-                                t.printStackTrace();
+                                if(t instanceof IOException){
+                                    Log.i(TAG, "onResponse: IOException  ");
+                                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
+                                }else{
+                                    Log.i(TAG, "onResponse: autre probleme ");
+                                }
                             }
                         });
                     }
@@ -109,8 +115,7 @@ public class SplashScreenActivity extends AppCompatActivity {
             public void onFailure(Call<LightResponse> call, Throwable t) {
                 if(t instanceof IOException){
                     Log.i(TAG, "onResponse: IOException  ");
-                    call.cancel();
-                    call.clone().enqueue(this);
+                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
                 }else{
                     Log.i(TAG, "onResponse: autre probleme ");
                 }
@@ -161,7 +166,12 @@ public class SplashScreenActivity extends AppCompatActivity {
 
                             @Override
                             public void onFailure(Call<Programming> call, Throwable t) {
-                                t.printStackTrace();
+                                if(t instanceof IOException){
+                                    Log.i(TAG, "onResponse: IOException  ");
+                                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
+                                }else{
+                                    Log.i(TAG, "onResponse: autre probleme ");
+                                }
                             }
                         });
                     }
@@ -172,8 +182,7 @@ public class SplashScreenActivity extends AppCompatActivity {
             public void onFailure(Call<ProgrammingResponse> call, Throwable t) {
                 if(t instanceof IOException){
                     Log.i(TAG, "onResponse: IOException  ");
-                    call.cancel();
-                    call.clone().enqueue(this);
+                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
                 }else{
                     Log.i(TAG, "onResponse: autre probleme ");
                 }
@@ -201,8 +210,7 @@ public class SplashScreenActivity extends AppCompatActivity {
             public void onFailure(Call<RecordResponse> call, Throwable t) {
                 if(t instanceof IOException){
                     Log.i(TAG, "onResponse: IOException  ");
-                    call.cancel();
-                    call.clone().enqueue(this);
+                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
                 }else{
                     Log.i(TAG, "onResponse: autre probleme ");
                 }

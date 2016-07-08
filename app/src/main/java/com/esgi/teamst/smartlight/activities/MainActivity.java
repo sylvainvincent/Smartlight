@@ -10,6 +10,7 @@ import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.esgi.teamst.smartlight.R;
 import com.esgi.teamst.smartlight.models.Light;
@@ -85,7 +86,13 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
                     @Override
                     public void onFailure(Call<LightResponse> call, Throwable t) {
-                        t.printStackTrace();
+                        if(t instanceof IOException){
+                            Log.i(TAG, "onResponse: IOException  ");
+                            Toast.makeText(MainActivity.this, "Problème de connexion", Toast.LENGTH_SHORT).show();
+
+                        }else{
+                            Log.i(TAG, "onResponse: autre probleme ");
+                        }
                     }
                 });
             }
@@ -242,7 +249,33 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     @Override
     public void onFailure(Call<LightResponse> call, Throwable t) {
-        t.printStackTrace();
+        if(t instanceof IOException){
+            Log.i(TAG, "onResponse: IOException  ");
+            if(mSwitchAutomaticLighting.isChecked()){
+                mIgnoreChange = true;
+                mSwitchAutomaticLighting.setChecked(false);
+            }else if(mSwitchContinueLighting.isChecked()){
+                mIgnoreChange = true;
+                mSwitchContinueLighting.setChecked(false);
+            }else{
+                mIgnoreChange = true;
+                mSwitchAutomaticIntensity.setChecked(false);
+            }
+            Toast.makeText(this, "Problème de connexion", Toast.LENGTH_SHORT).show();
+
+        }else{
+            if(mSwitchAutomaticLighting.isChecked()){
+                mIgnoreChange = true;
+                mSwitchAutomaticLighting.setChecked(false);
+            }else if(mSwitchContinueLighting.isChecked()){
+                mIgnoreChange = true;
+                mSwitchContinueLighting.setChecked(false);
+            }else{
+                mIgnoreChange = true;
+                mSwitchAutomaticIntensity.setChecked(false);
+            }
+            Log.i(TAG, "onResponse: autre probleme ");
+        }
     }
 
     private void initView() {

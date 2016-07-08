@@ -2,31 +2,54 @@ package com.esgi.teamst.smartlight.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.esgi.teamst.smartlight.R;
+import com.esgi.teamst.smartlight.activities.ProgrammingActivity;
+import com.esgi.teamst.smartlight.models.Light;
+import com.esgi.teamst.smartlight.models.LightResponse;
+import com.esgi.teamst.smartlight.models.ProgrammingResponse;
+import com.esgi.teamst.smartlight.rest.ApiClient;
+import com.esgi.teamst.smartlight.rest.LightServiceInterface;
+import com.esgi.teamst.smartlight.rest.ProgrammingServiceInterface;
 import com.esgi.teamst.smartlight.utility.Util;
 import com.esgi.teamst.smartlight.models.Programming;
 import com.esgi.teamst.smartlight.models.Day;
 
+import java.io.IOException;
 import java.util.ArrayList;
+
+import io.realm.Realm;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 /**
  * Created by sylvainvincent on 26/04/16.
  */
 public class ProgrammingAdapter extends BaseAdapter {
 
+    private static final String TAG = ProgrammingActivity.class.getSimpleName();
     private ArrayList<Programming> mProgrammingArrayList;
+    private ProgrammingServiceInterface mProgrammingServiceInterface;
+    private Realm realm;
     private Context mContext;
+    private Programming programming;
 
     public ProgrammingAdapter(Context context, ArrayList<Programming> programmingArrayList){
         mContext = context;
         mProgrammingArrayList = programmingArrayList;
+        mProgrammingServiceInterface = ApiClient.getClient().create(ProgrammingServiceInterface.class);
+        realm = Realm.getDefaultInstance();
     }
 
     @Override
@@ -45,7 +68,7 @@ public class ProgrammingAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder = null;
 
         if(convertView == null){
@@ -61,6 +84,8 @@ public class ProgrammingAdapter extends BaseAdapter {
             viewHolder.mTextSunday = (TextView) convertView.findViewById(R.id.text_alarm_sunday);
             viewHolder.mTextSaturday = (TextView) convertView.findViewById(R.id.text_alarm_saturday);
 
+
+
             convertView.setTag(viewHolder);
         }else{
             try {
@@ -70,12 +95,49 @@ public class ProgrammingAdapter extends BaseAdapter {
             }
         }
 
-        Programming programming = mProgrammingArrayList.get(position);
+        programming = mProgrammingArrayList.get(position);
 
         assert viewHolder != null;
         viewHolder.mTextTime.setText(Util.dateToTimeString(programming.getmTime()));
 
         viewHolder.mSwitchAlarm.setChecked(programming.ismEnabled());
+        viewHolder.mSwitchAlarm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
+                Programming pro = new Programming();
+                pro.setmEnabled(isChecked);
+                Call<ProgrammingResponse> programmingResponseCall = mProgrammingServiceInterface.updateProgramming(programming.getmId(),pro);
+                programmingResponseCall.enqueue(new Callback<ProgrammingResponse>() {
+                    @Override
+                    public void onResponse(Call<ProgrammingResponse> call, Response<ProgrammingResponse> response) {
+                        if(response.code() == 200){
+                            Log.e(TAG, "onResponse: on response OK" );
+                            realm.beginTransaction();
+                            mProgrammingArrayList.get(position).setmEnabled(isChecked);
+                            realm.commitTransaction();
+                            refreshList(mProgrammingArrayList);
+                        }else{
+                            Log.e(TAG, "onResponse: on response NON OK" + response.errorBody());
+                            refreshList(mProgrammingArrayList);
+                            Toast.makeText(mContext, "Une erreur est survenue", Toast.LENGTH_SHORT).show();
+                        }
+
+                    }
+
+                    @Override
+                    public void onFailure(Call<ProgrammingResponse> call, Throwable t) {
+                        if(t instanceof IOException){
+                            Log.i(TAG, "onResponse: IOException  ");
+                            refreshList(mProgrammingArrayList);
+                            Toast.makeText(mContext, "Problème de connexion", Toast.LENGTH_SHORT).show();
+
+                        }else{
+                            Log.i(TAG, "onResponse: autre probleme ");
+                        }
+                    }
+                });
+            }
+        });
 
         Day day = programming.getmDaysEnabled();
 
