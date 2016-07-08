@@ -4,13 +4,14 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.Switch;
 import android.widget.TextView;
 
 import com.esgi.teamst.smartlight.R;
-import com.esgi.teamst.smartlight.Util;
-import com.esgi.teamst.smartlight.models.Alarm;
+import com.esgi.teamst.smartlight.utility.Util;
+import com.esgi.teamst.smartlight.models.Programming;
 import com.esgi.teamst.smartlight.models.Day;
 
 import java.util.ArrayList;
@@ -18,24 +19,24 @@ import java.util.ArrayList;
 /**
  * Created by sylvainvincent on 26/04/16.
  */
-public class AlarmAdapter extends BaseAdapter {
+public class ProgrammingAdapter extends BaseAdapter {
 
-    private ArrayList<Alarm> mAlarmsList;
+    private ArrayList<Programming> mProgrammingArrayList;
     private Context mContext;
 
-    public AlarmAdapter(Context context, ArrayList<Alarm> alarmsList){
-        mAlarmsList = alarmsList;
+    public ProgrammingAdapter(Context context, ArrayList<Programming> programmingArrayList){
         mContext = context;
+        mProgrammingArrayList = programmingArrayList;
     }
 
     @Override
     public int getCount() {
-        return mAlarmsList.size();
+        return mProgrammingArrayList.size();
     }
 
     @Override
     public Object getItem(int position) {
-        return mAlarmsList.get(position);
+        return mProgrammingArrayList.get(position);
     }
 
     @Override
@@ -48,7 +49,7 @@ public class AlarmAdapter extends BaseAdapter {
         ViewHolder viewHolder = null;
 
         if(convertView == null){
-            convertView = ((Activity) mContext).getLayoutInflater().inflate(R.layout.item_alarm, parent, false);
+            convertView = ((Activity) mContext).getLayoutInflater().inflate(R.layout.item_programming, parent, false);
             viewHolder = new ViewHolder();
             viewHolder.mTextTime = (TextView) convertView.findViewById(R.id.text_time);
             viewHolder.mSwitchAlarm = (Switch) convertView.findViewById(R.id.switch_alarm);
@@ -69,37 +70,35 @@ public class AlarmAdapter extends BaseAdapter {
             }
         }
 
-        Alarm alarm = mAlarmsList.get(position);
+        Programming programming = mProgrammingArrayList.get(position);
 
-        viewHolder.mTextTime.setText(Util.dateToString(alarm.getmTime()));
+        assert viewHolder != null;
+        viewHolder.mTextTime.setText(Util.dateToTimeString(programming.getmTime()));
 
-        if(alarm.isActive())viewHolder.mSwitchAlarm.setChecked(true);
-        else viewHolder.mSwitchAlarm.setChecked(false);
+        viewHolder.mSwitchAlarm.setChecked(programming.ismEnabled());
 
-        Day day = alarm.getmDays();
+        Day day = programming.getmDaysEnabled();
 
-        if(day.isMonday())  viewHolder.mTextMonday.setEnabled(true);
-        else viewHolder.mTextMonday.setEnabled(false);
+        viewHolder.mTextMonday.setEnabled(day.isMonday());
 
-        if(day.isTuesday())  viewHolder.mTextTuesday.setEnabled(true);
-        else viewHolder.mTextTuesday.setEnabled(false);
+        viewHolder.mTextTuesday.setEnabled(day.isTuesday());
 
-        if(day.isWednesday())  viewHolder.mTextWednesday.setEnabled(true);
-        else viewHolder.mTextWednesday.setEnabled(false);
+        viewHolder.mTextWednesday.setEnabled(day.isWednesday());
 
-        if(day.isThursday())  viewHolder.mTextThursday.setEnabled(true);
-        else viewHolder.mTextThursday.setEnabled(false);
+        viewHolder.mTextThursday.setEnabled(day.isThursday());
 
-        if(day.isFriday())  viewHolder.mTextFriday.setEnabled(true);
-        else viewHolder.mTextFriday.setEnabled(false);
+        viewHolder.mTextFriday.setEnabled(day.isFriday());
 
-        if(day.isSunday())  viewHolder.mTextSunday.setEnabled(true);
-        else viewHolder.mTextSunday.setEnabled(false);
+        viewHolder.mTextSaturday.setEnabled(day.isSaturday());
 
-        if(day.isMonday())  viewHolder.mTextMonday.setEnabled(true);
-        else viewHolder.mTextSaturday.setEnabled(false);
+        viewHolder.mTextSunday.setEnabled(day.isSunday());
 
         return convertView;
+    }
+
+    public void refreshList(ArrayList<Programming> programmingArrayList){
+        mProgrammingArrayList = programmingArrayList;
+        notifyDataSetChanged();
     }
 
     private class ViewHolder{

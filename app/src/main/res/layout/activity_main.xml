@@ -42,10 +42,13 @@
             android:orientation="horizontal">
 
             <LinearLayout
+                android:id="@+id/linear_automatic_lighting"
                 android:layout_width="270dp"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
+
                 <TextView
+                    android:id="@+id/text_name_automatic_lighting"
                     android:text="Mode automatique"
                     android:layout_marginBottom="5dp"
                     android:textStyle="bold"
@@ -53,9 +56,10 @@
                     android:layout_height="wrap_content" />
 
                 <TextView
+                    android:id="@+id/text_description_automatic_lighting"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:text="Active le détecteur de présence"/>
+                    android:text="Active le détecteur de présence."/>
             </LinearLayout>
 
 
@@ -72,10 +76,12 @@
             android:orientation="horizontal">
 
             <LinearLayout
+                android:id="@+id/linear_continue_lighting"
                 android:layout_width="270dp"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
                 <TextView
+                    android:id="@+id/text_name_continue_lighting"
                     android:text="Mode continue"
                     android:layout_marginBottom="5dp"
                     android:textStyle="bold"
@@ -83,9 +89,10 @@
                     android:layout_height="wrap_content" />
 
                 <TextView
+                    android:id="@+id/text_description_continue_lighting"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:text="Allume l'ampoule"/>
+                    android:text="L'ampoule reste allumer jusqu'a que vous l'éteignez."/>
             </LinearLayout>
 
 
@@ -106,7 +113,7 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
                 <TextView
-                    android:text="Adapter l'éclairage"
+                    android:text="Luminosité automatique"
                     android:layout_marginBottom="5dp"
                     android:textStyle="bold"
                     android:layout_width="wrap_content"
@@ -115,20 +122,41 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:text="Varier l'intensité de la lumière en fonction du moment de la journée"/>
+                    android:text="Varier l'intensité de la lumière en fonction du moment de la journée."/>
             </LinearLayout>
 
 
             <Switch
-                android:id="@+id/switch_time_lighting"
+                android:id="@+id/switch_automatic_intensity"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
         </LinearLayout>
-        
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:text="Luminosité manuelle"
+                android:layout_marginBottom="20dp"
+                android:textStyle="bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <SeekBar
+                android:layout_width="300dp"
+                android:layout_height="wrap_content"
+                android:id="@+id/seek_intensity"
+                android:layout_gravity="center_horizontal" />
+
+        </LinearLayout>
+
     </LinearLayout>
 
     <com.getbase.floatingactionbutton.FloatingActionsMenu
-        android:id="@+id/multiple_actions_event"
+        android:id="@+id/fab_menu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|bottom"
@@ -148,24 +176,24 @@
             app:fab_title="Programmer l'heure d'eclairage" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/modify_event_button"
+            android:id="@+id/fab_logs_list"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="visible"
             app:fab_colorNormal="@color/colorAccent"
             app:fab_colorPressed="@color/colorAccent"
-            app:fab_icon="@drawable/ic_action_add"
-            app:fab_title="Modifier" />
+            app:fab_icon="@drawable/ic_action_list"
+            app:fab_title="Journal d'activités" />
 
         <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/join_event_button"
+            android:id="@+id/fab_settings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="visible"
             app:fab_colorNormal="@color/colorAccent"
             app:fab_colorPressed="@color/colorAccent"
-            app:fab_icon="@drawable/ic_action_add"
-            app:fab_title="Rejoindre" />
+            app:fab_icon="@drawable/ic_action_settings"
+            app:fab_title="Paramètres" />
 
     </com.getbase.floatingactionbutton.FloatingActionsMenu>
 
