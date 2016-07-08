@@ -65,15 +65,17 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 Log.i(TAG, "onProgressChanged: " + progress);
                 Light light = new Light();
-                light.setmDateSwitchedOn(new Date());
-                light.setmAutomatic(mRealmLight.ismAutomatic());
-                light.setmSwitchedOn(mRealmLight.ismSwitchedOn());
+            //    light.setmDateSwitchedOn(new Date());
+            //    light.setmAutomatic(mRealmLight.ismAutomatic());
+            //    light.setmSwitchedOn(mRealmLight.ismSwitchedOn());
                 light.setmBrightnessAuto(mRealmLight.ismBrightnessAuto());
                 light.setmBrightnessValue(progress);
                 Call<LightResponse> lightUpdate = mLightServiceInterface.updateLight(mRealmLight.getmId(), light);
                 lightUpdate.enqueue(new Callback<LightResponse>() {
                     @Override
                     public void onResponse(Call<LightResponse> call, Response<LightResponse> response) {
+                        Log.i(TAG, "onResponse: passage" + response.message());
+                        Log.i(TAG, "onResponse: passage" + response.body().getLight().getmName());
                         if(response.code() == 200){
                             mRealm.beginTransaction();
                             mRealm.copyToRealmOrUpdate(response.body().getLight());
@@ -185,7 +187,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     @Override
     public void onResponse(Call<LightResponse> call, Response<LightResponse> response) {
         if(response.code() == 200){
-            Log.i(TAG, "onResponse: passage");
+            Log.i(TAG, "onResponse général: passage" + response.message());
+            Log.i(TAG, "onResponse général: passage" + response.body().getLight().getmName());
 
             if(mSwitchAutomaticLighting.isChecked()){
                 // Blocage du mode continue
@@ -197,11 +200,9 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             }
             if(mSwitchContinueLighting.isChecked()){
                 // Blocage du mode automatique
-                Log.i(TAG, "onResponse: continue check");
                 setAutomaticLightingOptionEnabled(false);
             }
             if(!mSwitchContinueLighting.isChecked()){
-                Log.i(TAG, "onResponse: continue non check");
                 // Déblocage du mode continue
                 setAutomaticLightingOptionEnabled(true);
             }
@@ -257,6 +258,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         mSwitchContinueLighting = (Switch) findViewById(R.id.switch_continue_lighting);
         mSwitchAutomaticIntensity = (Switch) findViewById(R.id.switch_automatic_intensity);
         mSeekBarIntensity = (SeekBar) findViewById(R.id.seek_intensity);
+        mSeekBarIntensity.setMax(15);
     }
 
     /**

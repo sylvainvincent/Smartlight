@@ -233,9 +233,11 @@ public class ProgrammingActivity extends AppCompatActivity implements CompoundBu
             }
 
             mSwitchGradualLight.setChecked(mRealmProgramming.ismGradual());
+
             if(!mRealmProgramming.ismGradual()){
-                mSeekIntensity.setMax(15);
                 mSeekIntensity.setProgress(mRealmProgramming.getmBrightnessValue());
+            }else{
+                mSeekIntensity.setEnabled(false);
             }
 
             Day day = mRealmProgramming.getmDaysEnabled();
