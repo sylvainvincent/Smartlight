@@ -92,7 +92,7 @@
                     android:text="Ven" />
 
                 <TextView
-                    android:id="@+id/text_alarm_sunday"
+                    android:id="@+id/text_alarm_saturday"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:gravity="center"
@@ -100,7 +100,7 @@
                     android:text="Sam" />
 
                 <TextView
-                    android:id="@+id/text_alarm_saturday"
+                    android:id="@+id/text_alarm_sunday"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:gravity="center"

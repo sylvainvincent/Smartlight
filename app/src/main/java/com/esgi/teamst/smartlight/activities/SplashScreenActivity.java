@@ -1,6 +1,8 @@
 package com.esgi.teamst.smartlight.activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
@@ -18,15 +20,19 @@ import com.esgi.teamst.smartlight.models.Record;
 import com.esgi.teamst.smartlight.models.RecordResponse;
 import com.esgi.teamst.smartlight.models.Programming;
 import com.esgi.teamst.smartlight.models.ProgrammingResponse;
+import com.esgi.teamst.smartlight.receivers.ProgrammingReceiver;
 import com.esgi.teamst.smartlight.rest.ApiClient;
 import com.esgi.teamst.smartlight.rest.LightServiceInterface;
 import com.esgi.teamst.smartlight.rest.RecordServiceInterface;
 import com.esgi.teamst.smartlight.rest.ProgrammingServiceInterface;
+import com.esgi.teamst.smartlight.services.ProgrammingService;
 
 import java.io.IOException;
 import java.net.ConnectException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
@@ -46,7 +52,11 @@ public class SplashScreenActivity extends AppCompatActivity {
     private Realm mRealm;
     private Light mLight;
     private Programming mProgramming;
+    private AlertDialog alertDialog;
 
+    private boolean mProgrammingSuccess = false;
+    private boolean mLightSuccess = false;
+    private boolean mRecordSuccess = false;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +82,9 @@ public class SplashScreenActivity extends AppCompatActivity {
                         mRealm.clear(Light.class);
                         mRealm.copyToRealm(mLight);
                         mRealm.commitTransaction();
+                        Log.i(TAG, "onResponse: Récupération programming terminée");
+                        mLightSuccess = true;
+                        startApplication();
 
                     }else{
                         // Création d'une nouvelle éclairage et ajout/modification dans Realm
@@ -82,14 +95,18 @@ public class SplashScreenActivity extends AppCompatActivity {
                             public void onResponse(Call<Light> call, Response<Light> postResponse) {
                                 if(postResponse.code() == 201){
                                     mLight.setmId(postResponse.body().getmId());
+                                    Log.i(TAG, "onResponse: Création éclairage" + mLight.toString());
                                     Realm realm = Realm.getDefaultInstance();
                                     realm.beginTransaction();
+                                    realm.clear(Light.class);
                                     realm.copyToRealm(mLight);
                                     realm.commitTransaction();
-
+                                    Log.i(TAG, "onResponse: Création éclairage terminée");
+                                    mLightSuccess = true;
+                                    startApplication();
                                 }else{
                                     try {
-                                        Log.i(TAG, "onResponse post : " + postResponse.errorBody().string());
+                                        Log.i(TAG, "onResponse post light: " + postResponse.errorBody().string());
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
@@ -100,7 +117,19 @@ public class SplashScreenActivity extends AppCompatActivity {
                             public void onFailure(Call<Light> call, Throwable t) {
                                 if(t instanceof IOException){
                                     Log.i(TAG, "onResponse: IOException  ");
-                                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
+                                    alertDialog = new AlertDialog.Builder(SplashScreenActivity.this)
+                                            .setTitle("Problème de connexion")
+                                            .setPositiveButton("Réessayer", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    
+                                                    Intent i = getBaseContext().getPackageManager()
+                                                            .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+                                                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                    startActivity(i);
+                                                }
+                                            })
+                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                            .show();
                                 }else{
                                     Log.i(TAG, "onResponse: autre probleme ");
                                 }
@@ -114,8 +143,21 @@ public class SplashScreenActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<LightResponse> call, Throwable t) {
                 if(t instanceof IOException){
-                    Log.i(TAG, "onResponse: IOException  ");
-                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
+                    Log.i(TAG, "onResponse: IOException get light  ");
+                    alertDialog = new AlertDialog.Builder(SplashScreenActivity.this)
+                            .setTitle("Problème de connexion")
+                            .setPositiveButton("Réessayer", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    Intent i = getBaseContext().getPackageManager()
+                                            .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+                                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(i);
+                                }
+                            })
+                            .setCancelable(false)
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
                 }else{
                     Log.i(TAG, "onResponse: autre probleme ");
                 }
@@ -136,6 +178,16 @@ public class SplashScreenActivity extends AppCompatActivity {
                             mRealm.clear(Programming.class);
                             mRealm.copyToRealm(mProgramming);
                             mRealm.commitTransaction();
+                            Log.i(TAG, "onResponse: Récupération Programming terminée");
+                            mProgrammingSuccess = true;
+                            Intent intent = new Intent(SplashScreenActivity.this, ProgrammingService.class);
+                            if(mProgramming.ismEnabled()){
+                                intent.putExtra("id",mProgramming.getmId());
+                                startService(intent);
+                            }else{
+                                stopService(intent);
+                            }
+                            startApplication();
                         }catch (Exception e){
                             e.printStackTrace();
                         }
@@ -152,12 +204,16 @@ public class SplashScreenActivity extends AppCompatActivity {
                                     Log.i(TAG, "onResponse: Création Programming" + mProgramming.toString());
                                     Realm realm = Realm.getDefaultInstance();
                                     realm.beginTransaction();
-                                    realm.copyToRealmOrUpdate(mProgramming);
+                                    realm.clear(Programming.class);
+                                    realm.copyToRealm(mProgramming);
                                     realm.commitTransaction();
+                                    Log.i(TAG, "onResponse: Création Programming terminée");
+                                    mProgrammingSuccess = true;
+                                    startApplication();
                                 }else{
                                     try {
 
-                                        Log.i(TAG, "onResponse post : " + postResponse.errorBody().string());
+                                        Log.i(TAG, "onResponse post programming: " + postResponse.errorBody().string());
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
@@ -167,8 +223,21 @@ public class SplashScreenActivity extends AppCompatActivity {
                             @Override
                             public void onFailure(Call<Programming> call, Throwable t) {
                                 if(t instanceof IOException){
-                                    Log.i(TAG, "onResponse: IOException  ");
-                                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
+                                    Log.i(TAG, "onResponse: IOException création programming ");
+                                    alertDialog = new AlertDialog.Builder(SplashScreenActivity.this)
+                                            .setTitle("Problème de connexion")
+                                            .setPositiveButton("Réessayer", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int which) {
+
+                                                    Intent i = getBaseContext().getPackageManager()
+                                                            .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+                                                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                                    startActivity(i);
+                                                }
+                                            })
+                                            .setCancelable(false)
+                                            .setIcon(android.R.drawable.ic_dialog_alert)
+                                            .show();
                                 }else{
                                     Log.i(TAG, "onResponse: autre probleme ");
                                 }
@@ -181,8 +250,21 @@ public class SplashScreenActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<ProgrammingResponse> call, Throwable t) {
                 if(t instanceof IOException){
-                    Log.i(TAG, "onResponse: IOException  ");
-                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
+                    Log.i(TAG, "onResponse: IOException get programming ");
+                    alertDialog = new AlertDialog.Builder(SplashScreenActivity.this)
+                            .setTitle("Problème de connexion")
+                            .setPositiveButton("Réessayer", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    Intent i = getBaseContext().getPackageManager()
+                                            .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+                                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                                    startActivity(i);
+                                }
+                            })
+                            .setCancelable(false)
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
                 }else{
                     Log.i(TAG, "onResponse: autre probleme ");
                 }
@@ -194,6 +276,7 @@ public class SplashScreenActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<RecordResponse> call, Response<RecordResponse> response) {
                 if(response.code() == 200){
+                    Log.i(TAG, "onResponse: get record OK ");
                     List<Record> recordList = response.body().getRecords();
                     for (Record record: recordList) {
                         Log.i(TAG, "onResponse: get record " + record.toString());
@@ -202,7 +285,9 @@ public class SplashScreenActivity extends AppCompatActivity {
                         mRealm.copyToRealm(record);
                         mRealm.commitTransaction();
                     }
-                    startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
+                    Log.i(TAG, "onResponse: Récupération record terminée");
+                    mRecordSuccess = true;
+                    startApplication();
                 }
             }
 
@@ -210,7 +295,23 @@ public class SplashScreenActivity extends AppCompatActivity {
             public void onFailure(Call<RecordResponse> call, Throwable t) {
                 if(t instanceof IOException){
                     Log.i(TAG, "onResponse: IOException  ");
-                    // FIXME: 08/07/16 AJOUTER Un alerte dialog
+                    Log.i(TAG, "onResponse: IOException get programming ");
+                    alertDialog = new AlertDialog.Builder(SplashScreenActivity.this)
+                            .setTitle("Problème de connexion")
+                            .setPositiveButton("Réessayer", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+
+
+                                    Intent i = getBaseContext().getPackageManager()
+                                            .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+                                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+                                    startActivity(i);
+                                }
+                            })
+                            .setCancelable(false)
+                            .setIcon(android.R.drawable.ic_dialog_alert)
+                            .show();
                 }else{
                     Log.i(TAG, "onResponse: autre probleme ");
                 }
@@ -246,7 +347,7 @@ public class SplashScreenActivity extends AppCompatActivity {
 
         Light light = new Light();
         light.setmName("light");
-        light.setmBrightnessValue(100);
+        light.setmBrightnessValue(15);
         light.setmAutomatic(true);
         light.setmSwitchedOn(false);
         light.setmBrightnessAuto(true);
@@ -275,11 +376,27 @@ public class SplashScreenActivity extends AppCompatActivity {
         Programming programming = new Programming();
         programming.setmEnabled(false);
         programming.setmTrigger(false);
-        programming.setmBrightnessValue(2);
+        programming.setmBrightnessValue(9);
         programming.setmGradual(false);
-        programming.setmTime(new Date());
+        programming.setmTime(Calendar.getInstance(Locale.getDefault()).getTime());
         programming.setmDaysEnabled(day);
 
         return programming;
+    }
+
+    private void startApplication(){
+        if(mLightSuccess && mProgrammingSuccess && mRecordSuccess){
+            startActivity(new Intent(SplashScreenActivity.this, MainActivity.class));
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if(alertDialog != null){
+            if(alertDialog.isShowing()){
+                alertDialog.dismiss();
+            }
+        }
     }
 }

@@ -1,6 +1,8 @@
 package com.esgi.teamst.smartlight.activities;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
@@ -37,6 +39,7 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
     private EditText mEditAutomaticSwitchedOff;
     private FloatingActionButton mFabSaveSettings;
     private CoordinatorLayout mCoordinatorSettings;
+    private ProgressDialog progress;
 
     private Realm mRealm;
     private Light mRealmLight;
@@ -76,10 +79,15 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                 if(!mEditAutomaticSwitchedOff.getText().toString().equals("")){
                     if(!mEditAutomaticSwitchedOff.getText().toString().equals(String.valueOf(mRealmLight.getmSwitchedOffAutoValue()))){
 
+
                         final int automaticSwitchedOff = Integer.parseInt(mEditAutomaticSwitchedOff.getText().toString());
                         Light light = new Light();
                         light.setmSwitchedOffAutoValue(automaticSwitchedOff);
-                        Call<LightResponse> lightCall = mLightServiceInterface.updateLight(mRealmLight.getmId(),light);
+                        light.setmBrightnessValue(mRealmLight.getmBrightnessValue());
+                        light.setmAutomatic(mRealmLight.ismAutomatic());
+                        light.setmBrightnessAuto(mRealmLight.ismBrightnessAuto());
+                        light.setmSwitchedOn(mRealmLight.ismSwitchedOn());
+                        final Call<LightResponse> lightCall = mLightServiceInterface.updateLight(mRealmLight.getmId(),light);
                         lightCall.enqueue(new Callback<LightResponse>() {
                             @Override
                             public void onResponse(Call<LightResponse> call, Response<LightResponse> response) {
@@ -87,7 +95,8 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                                     mRealm.beginTransaction();
                                     mRealm.copyToRealmOrUpdate(response.body().getLight());
                                     mRealm.commitTransaction();
-                                    Snackbar.make(mCoordinatorSettings,"Sauvegarde effectuée",Snackbar.LENGTH_INDEFINITE).show();
+                                    progress.dismiss();
+                                    Snackbar.make(mCoordinatorSettings,"Sauvegarde effectuée",Snackbar.LENGTH_LONG).show();
                                 }
                             }
 
@@ -102,12 +111,18 @@ public class SettingsActivity extends AppCompatActivity implements View.OnClickL
                                 }
                             }
                         });
+                        progress = ProgressDialog.show(this, null, "Chargement", true, true, new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                lightCall.cancel();
+                            }
+                        });
                     }else{
-                        Snackbar.make(mCoordinatorSettings,"Il n'y a pas de changement",Snackbar.LENGTH_INDEFINITE).show();
+                        Snackbar.make(mCoordinatorSettings,"Il n'y a pas de changement",Snackbar.LENGTH_SHORT).show();
                     }
 
                 }else{
-                    Snackbar.make(mCoordinatorSettings,"Le champ est vide",Snackbar.LENGTH_INDEFINITE).show();
+                    Snackbar.make(mCoordinatorSettings,"Le champ est vide",Snackbar.LENGTH_SHORT).show();
                 }
 
                 break;

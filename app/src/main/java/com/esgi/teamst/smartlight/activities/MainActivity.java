@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         super.setContentView(R.layout.activity_main);
+        Log.i(TAG, "Create mainactivity: " );
         this.initView();
         this.initValues();
         mLightServiceInterface = ApiClient.getClient().create(LightServiceInterface.class);
@@ -66,11 +67,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 Log.i(TAG, "onProgressChanged: " + progress);
                 Light light = new Light();
-            //    light.setmDateSwitchedOn(new Date());
-            //    light.setmAutomatic(mRealmLight.ismAutomatic());
-            //    light.setmSwitchedOn(mRealmLight.ismSwitchedOn());
+                light.setmAutomatic(mRealmLight.ismAutomatic());
+                light.setmSwitchedOn(mRealmLight.ismSwitchedOn());
                 light.setmBrightnessAuto(mRealmLight.ismBrightnessAuto());
                 light.setmBrightnessValue(progress);
+                light.setmSwitchedOffAutoValue(mRealmLight.getmSwitchedOffAutoValue());
                 Call<LightResponse> lightUpdate = mLightServiceInterface.updateLight(mRealmLight.getmId(), light);
                 lightUpdate.enqueue(new Callback<LightResponse>() {
                     @Override
@@ -130,6 +131,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                         light.setmSwitchedOn(false);
                     }
                     light.setmBrightnessAuto(mRealmLight.ismBrightnessAuto());
+                    light.setmSwitchedOffAutoValue(mRealmLight.getmSwitchedOffAutoValue());
+                    light.setmBrightnessValue(mRealmLight.getmBrightnessValue());
                     Call<LightResponse> lightUpdate = mLightServiceInterface.updateLight(mRealmLight.getmId(), light);
                     lightUpdate.enqueue(this);
 
@@ -142,7 +145,6 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                 if(!mIgnoreChange){
                     Log.i(TAG, "onCheckedChanged: ok ok");
                     Light light = new Light();
-                    light.setmDateSwitchedOn(new Date());
                     if(isChecked){
                         light.setmAutomatic(false);
                         light.setmSwitchedOn(true);
@@ -150,7 +152,10 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
                         light.setmAutomatic(false);
                         light.setmSwitchedOn(false);
                     }
+                    light.setmDateSwitchedOn(new Date());
                     light.setmBrightnessAuto(mRealmLight.ismBrightnessAuto());
+                    light.setmBrightnessValue(mRealmLight.getmBrightnessValue());
+                    light.setmSwitchedOffAutoValue(mRealmLight.getmSwitchedOffAutoValue());
                     Call<LightResponse> lightUpdate = mLightServiceInterface.updateLight(mRealmLight.getmId(), light);
                     lightUpdate.enqueue(this);
 
@@ -161,7 +166,8 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             case R.id.switch_automatic_intensity:
                 if(!mIgnoreChange) {
                     Light light = new Light();
-                    light.setmDateSwitchedOn(new Date());
+                    light.setmBrightnessValue(mRealmLight.getmBrightnessValue());
+                    light.setmSwitchedOffAutoValue(mRealmLight.getmSwitchedOffAutoValue());
                     light.setmBrightnessAuto(isChecked);
                     light.setmAutomatic(mRealmLight.ismAutomatic());
                     light.setmSwitchedOn(mRealmLight.ismSwitchedOn());
@@ -318,7 +324,11 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
             // Soit luminosité auto soit manuelle
             if(mRealmLight.ismBrightnessAuto()){
                 mSeekBarIntensity.setEnabled(false);
+            }else{
+                mSeekBarIntensity.setProgress(mRealmLight.getmBrightnessValue());
             }
+        }else{
+            Log.i(TAG, "Realm non trouvé");
         }
 
     }

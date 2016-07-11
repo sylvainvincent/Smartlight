@@ -13,8 +13,10 @@ import java.util.Locale;
 public class DateUtil {
 
     public static String dateToTimeString(Date date){
-        DateFormat dateFormat = new SimpleDateFormat("hh:mm", Locale.getDefault());
-        return dateFormat.format(date);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+
+        return String.format("%02d:%02d", calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE));
     }
 
     public static int getHourByDate(Date date){
@@ -22,5 +24,13 @@ public class DateUtil {
         calendar.setTime(date);
         return calendar.get(Calendar.HOUR_OF_DAY);
     }
+
+    public static int getMinutesByDate(Date date){
+        Calendar calendar = GregorianCalendar.getInstance();
+        calendar.setTime(date);
+        return calendar.get(Calendar.MINUTE);
+    }
+
+
 
 }

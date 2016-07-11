@@ -2,6 +2,7 @@ package com.esgi.teamst.smartlight.adapters;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.View;
@@ -21,6 +22,8 @@ import com.esgi.teamst.smartlight.models.ProgrammingResponse;
 import com.esgi.teamst.smartlight.rest.ApiClient;
 import com.esgi.teamst.smartlight.rest.LightServiceInterface;
 import com.esgi.teamst.smartlight.rest.ProgrammingServiceInterface;
+import com.esgi.teamst.smartlight.services.ProgrammingService;
+import com.esgi.teamst.smartlight.utility.DateUtil;
 import com.esgi.teamst.smartlight.utility.Util;
 import com.esgi.teamst.smartlight.models.Programming;
 import com.esgi.teamst.smartlight.models.Day;
@@ -98,7 +101,7 @@ public class ProgrammingAdapter extends BaseAdapter {
         programming = mProgrammingArrayList.get(position);
 
         assert viewHolder != null;
-        viewHolder.mTextTime.setText(Util.dateToTimeString(programming.getmTime()));
+        viewHolder.mTextTime.setText(DateUtil.dateToTimeString(programming.getmTime()));
 
         viewHolder.mSwitchAlarm.setChecked(programming.ismEnabled());
         viewHolder.mSwitchAlarm.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -106,6 +109,9 @@ public class ProgrammingAdapter extends BaseAdapter {
             public void onCheckedChanged(CompoundButton buttonView, final boolean isChecked) {
                 Programming pro = new Programming();
                 pro.setmEnabled(isChecked);
+                pro.setmGradual(programming.ismGradual());
+                pro.setmBrightnessValue(programming.getmBrightnessValue());
+                pro.setmTrigger(programming.ismTrigger());
                 Call<ProgrammingResponse> programmingResponseCall = mProgrammingServiceInterface.updateProgramming(programming.getmId(),pro);
                 programmingResponseCall.enqueue(new Callback<ProgrammingResponse>() {
                     @Override
@@ -115,6 +121,13 @@ public class ProgrammingAdapter extends BaseAdapter {
                             realm.beginTransaction();
                             mProgrammingArrayList.get(position).setmEnabled(isChecked);
                             realm.commitTransaction();
+                            Intent intent = new Intent(mContext, ProgrammingService.class);
+                            if(isChecked){
+                                intent.putExtra("id",response.body().getProgramming().getmId());
+                                mContext.startService(intent);
+                            }else{
+                                mContext.stopService(intent);
+                            }
                             refreshList(mProgrammingArrayList);
                         }else{
                             Log.e(TAG, "onResponse: on response NON OK" + response.errorBody());

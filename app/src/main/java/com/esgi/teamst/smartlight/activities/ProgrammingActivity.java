@@ -1,6 +1,8 @@
 package com.esgi.teamst.smartlight.activities;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
@@ -12,6 +14,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -24,6 +27,7 @@ import com.esgi.teamst.smartlight.models.Programming;
 import com.esgi.teamst.smartlight.models.ProgrammingResponse;
 import com.esgi.teamst.smartlight.rest.ApiClient;
 import com.esgi.teamst.smartlight.rest.ProgrammingServiceInterface;
+import com.esgi.teamst.smartlight.services.ProgrammingService;
 import com.esgi.teamst.smartlight.utility.DateUtil;
 import com.esgi.teamst.smartlight.utility.Util;
 import com.esgi.teamst.smartlight.views.CustomScrollView;
@@ -32,6 +36,8 @@ import com.getbase.floatingactionbutton.FloatingActionButton;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import io.realm.Realm;
 import retrofit2.Call;
@@ -64,7 +70,7 @@ public class ProgrammingActivity extends AppCompatActivity implements CompoundBu
     private FloatingActionButton mFabSaveProgramming;
     private LinearLayout mLinearDaysProgramming;
     private CoordinatorLayout mCoordinatorProgramming;
-
+    private ProgressDialog mProgressDialog;
 
     private ProgrammingServiceInterface mProgrammingServiceInterface;
 
@@ -164,20 +170,28 @@ public class ProgrammingActivity extends AppCompatActivity implements CompoundBu
                 Programming programming = new Programming();
                 Calendar calendar = Calendar.getInstance();
                 if(Build.VERSION.SDK_INT >= 23){
-                    calendar.set(0,0,0,mTimeProgramming.getHour(),mTimeProgramming.getMinute());
+                    Log.i(TAG, "onClick: " + mTimeProgramming.getHour());
+                    calendar.set(0,0,0,mTimeProgramming.getHour()-1,mTimeProgramming.getMinute());
 
                 }else{
-                    calendar.set(0,0,0,mTimeProgramming.getCurrentHour(),mTimeProgramming.getCurrentMinute());
+                    Log.i(TAG, "onClick: " + mTimeProgramming.getCurrentHour());
+                    calendar.set(0,0,0,mTimeProgramming.getCurrentHour()-1,mTimeProgramming.getCurrentMinute());
                 }
+                Log.i(TAG, "onClick: " + calendar.getTime());
                 programming.setmTime(calendar.getTime());
                 programming.setmTrigger(false);
-                Day day = new Day(mDaysChecked);
-                programming.setmDaysEnabled(day);
+                programming.setmDaysEnabled(new Day(mDaysChecked));
                 programming.setmEnabled(mRealmProgramming.ismEnabled());
                 programming.setmBrightnessValue(mBrightnessValue);
                 programming.setmGradual(mSwitchGradualLight.isChecked());
-                Call<ProgrammingResponse> programmingResponseCall = mProgrammingServiceInterface.updateProgramming(mRealmProgramming.getmId(), programming);
+                final Call<ProgrammingResponse> programmingResponseCall = mProgrammingServiceInterface.updateProgramming(mRealmProgramming.getmId(), programming);
                 programmingResponseCall.enqueue(this);
+                mProgressDialog = ProgressDialog.show(this, null, "Chargement", true, true, new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        programmingResponseCall.cancel();
+                    }
+                });
                 break;
         }
     }
@@ -228,13 +242,16 @@ public class ProgrammingActivity extends AppCompatActivity implements CompoundBu
 
             if(Build.VERSION.SDK_INT >= 23){
                 mTimeProgramming.setHour(DateUtil.getHourByDate(mRealmProgramming.getmTime()));
+                mTimeProgramming.setMinute(DateUtil.getMinutesByDate(mRealmProgramming.getmTime()));
             }else{
                 mTimeProgramming.setCurrentHour(DateUtil.getHourByDate(mRealmProgramming.getmTime()));
+                mTimeProgramming.setCurrentMinute(DateUtil.getMinutesByDate(mRealmProgramming.getmTime()));
             }
 
             mSwitchGradualLight.setChecked(mRealmProgramming.ismGradual());
 
             if(!mRealmProgramming.ismGradual()){
+                mBrightnessValue = mRealmProgramming.getmBrightnessValue();
                 mSeekIntensity.setProgress(mRealmProgramming.getmBrightnessValue());
             }else{
                 mSeekIntensity.setEnabled(false);
@@ -260,7 +277,6 @@ public class ProgrammingActivity extends AppCompatActivity implements CompoundBu
 
         }
 
-
     }
 
     @Override
@@ -271,6 +287,12 @@ public class ProgrammingActivity extends AppCompatActivity implements CompoundBu
             mRealm.clear(Programming.class);
             mRealm.copyToRealm(response.body().getProgramming());
             mRealm.commitTransaction();
+            mProgressDialog.dismiss();
+            if(response.body().getProgramming().ismEnabled()){
+                Intent intent = new Intent(ProgrammingActivity.this, ProgrammingService.class);
+                intent.putExtra("id",response.body().getProgramming().getmId());
+                startService(intent);
+            }
             setResult(RESULT_OK);
             finish();
         }else{
@@ -279,6 +301,7 @@ public class ProgrammingActivity extends AppCompatActivity implements CompoundBu
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            mProgressDialog.dismiss();
             Snackbar.make(mCoordinatorProgramming,"Un problème inconnu est survenu",Snackbar.LENGTH_SHORT).show();
         }
     }
@@ -287,10 +310,12 @@ public class ProgrammingActivity extends AppCompatActivity implements CompoundBu
     public void onFailure(Call<ProgrammingResponse> call, Throwable t) {
         if(t instanceof IOException){
             Log.i(TAG, "onResponse: IOException  ");
+            mProgressDialog.dismiss();
             Snackbar.make(mCoordinatorProgramming,"Problème de connexion",Snackbar.LENGTH_SHORT).show();
         }else{
             t.printStackTrace();
             Log.i(TAG, "onResponse: Autre exception  " + t.getMessage());
+            mProgressDialog.dismiss();
             Snackbar.make(mCoordinatorProgramming,"Un problème inconnu est survenu",Snackbar.LENGTH_SHORT).show();
         }
     }

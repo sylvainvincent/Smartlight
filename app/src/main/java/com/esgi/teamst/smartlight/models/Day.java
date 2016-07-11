@@ -95,6 +95,18 @@ public class Day extends RealmObject {
         this.sunday = sunday;
     }
 
+    public boolean[] getBooleanDays(){
+        boolean[] booleanDays = new boolean[7];
+        booleanDays[0] = isMonday();
+        booleanDays[1] = isTuesday();
+        booleanDays[2] = isWednesday();
+        booleanDays[3] = isThursday();
+        booleanDays[4] = isFriday();
+        booleanDays[5] = isSaturday();
+        booleanDays[6] = isSunday();
+        return booleanDays;
+    }
+
     @Override
     public String toString() {
         return "Day{" +

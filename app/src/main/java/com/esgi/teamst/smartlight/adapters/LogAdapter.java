@@ -10,6 +10,7 @@ import android.widget.TextView;
 
 import com.esgi.teamst.smartlight.R;
 import com.esgi.teamst.smartlight.models.Record;
+import com.esgi.teamst.smartlight.utility.DateUtil;
 import com.esgi.teamst.smartlight.utility.Util;
 
 import java.util.List;
@@ -64,7 +65,7 @@ public class LogAdapter extends BaseAdapter {
         Record record = mRecordList.get(position);
         Log.i(TAG, "getView: " + record.toString());
         assert viewHolder != null;
-        viewHolder.mTextDate.setText(Util.dateToTimeString(record.getmPresenceDate()));
+        viewHolder.mTextDate.setText(DateUtil.dateToTimeString(record.getmPresenceDate()));
         viewHolder.mTextBrightness.setText(String.valueOf(record.getBrightness()));
 
         return convertView;

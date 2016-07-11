@@ -54,13 +54,13 @@
                 android:layout_height="match_parent"
                 android:text="Ven"/>
             <TextView
-                android:id="@+id/text_alarm_sunday"
+                android:id="@+id/text_alarm_saturday"
                 android:layout_width="35dp"
                 android:gravity="center"
                 android:layout_height="match_parent"
                 android:text="Sam"/>
             <TextView
-                android:id="@+id/text_alarm_saturday"
+                android:id="@+id/text_alarm_sunday"
                 android:layout_width="35dp"
                 android:gravity="center"
                 android:layout_height="match_parent"

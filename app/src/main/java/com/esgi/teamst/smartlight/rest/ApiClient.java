@@ -17,7 +17,7 @@ public class ApiClient {
 
     public static final String BASE_URL = "https://smart-light.herokuapp.com";
 
-  //  public static final String BASE_URL = "http://10.0.2.2:8080"; // Emulateur
+ //   public static final String BASE_URL = "http://10.0.2.2:8080"; // Emulateur
 
   //  public static final String BASE_URL = "http://192.168.1.17:8080"; // Device
 
